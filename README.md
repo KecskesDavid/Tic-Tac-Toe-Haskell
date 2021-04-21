@@ -1,1 +1,1 @@
-# Tic-Tac-Tie-Haskell
+# Tic-Tac-Te-Haskell

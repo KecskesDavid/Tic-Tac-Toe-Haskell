@@ -3,7 +3,7 @@ import GameWithTwo
 
 ----- Main -----
 
---- Játék indítása: mainTicTacToe ---
+--- How to start the game: mainTicTacToe ---
 mainTicTacToe = do
     putStrLn "Welcome!"
     printOptions

@@ -7,6 +7,7 @@ module Game (
     makeCellX,
     makeCellO,
     isFreeCell,
+    isFreeCellT,
     markX,
     markO,
     makeRowX,
@@ -56,6 +57,12 @@ isFreeCell :: Game -> Int -> Int -> Bool
 isFreeCell game i j
     | i < 0 || j < 0 || i > 2 || j > 2 = False
     | value ((table game) !! i !! j) == -1 = True
+    | otherwise = False
+
+-- isFreeCellT :: Game -> Int -> Int -> Bool
+isFreeCellT table i j
+    | i < 0 || j < 0 || i > 2 || j > 2 = False
+    | value (table !! i !! j) == -1 = True
     | otherwise = False
 
 -- Marks a X on the table then returns it

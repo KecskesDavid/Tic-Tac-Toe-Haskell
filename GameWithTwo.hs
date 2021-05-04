@@ -20,7 +20,7 @@ startGame game = do
     tempi <- getLine
     let i = read tempi::Int
 
-    putStr "i: "
+    putStr "j: "
     tempj <- getLine
     let j = read tempj::Int
 

@@ -10,7 +10,16 @@ module Game (
     markX,
     markO,
     makeRowX,
-    makeRowO
+    makeRowO,
+    returnWinner,
+    checkDiagonals,
+    checkColumns,
+    checkRows,
+    checkRow,
+    printCurrentStateOfGame,
+    makeHeaderStr,
+    makeTableStr,
+    makeRowStr
 )where
 
 import Data.List
@@ -74,3 +83,81 @@ makeRowO row curi curj i j
     | curj == 3 = []
     | curj == j && curi == i = makeCellO : makeRowO (tail row) curi (curj+1) i j
     | otherwise = (head row) : makeRowO (tail row) curi (curj+1) i j
+
+
+-- If someone won the game the sign X or O is returned
+returnWinner :: Game -> [Char]
+returnWinner markedGame 
+    | winnerDiagonals == "O" || winnerDiagonals == "X" = winnerDiagonals
+    | winnerColumns == "O" || winnerColumns == "X" = winnerColumns
+    | winnerLines == "O" || winnerLines == "X" = winnerLines
+    | otherwise = ""
+    where 
+        winnerDiagonals = checkDiagonals $ table markedGame
+        winnerColumns = checkColumns $ table markedGame
+        winnerLines = checkRows $ table markedGame
+
+-- The functions below checks whether there is a winner or not
+checkDiagonals :: [[Cell]] -> [Char]
+checkDiagonals table
+    | firstDiagonal == [0, 0, 0] = "O"
+    | secondDiagonal == [1, 1, 1] = "X"
+    | firstDiagonal == [0, 0, 0] = "O"
+    | secondDiagonal == [1, 1, 1] = "X"
+    | otherwise = ""
+    where
+        firstDiagonal = [value (table !! 0 !! 0), value (table !! 1 !! 1), value  (table !! 2 !! 2)]
+        secondDiagonal = [value (table !! 0 !! 0), value (table !! 1 !! 1), value (table !! 2 !! 2)]
+
+checkColumns :: [[Cell]] -> [Char]
+checkColumns table
+    | firstColumn == [0, 0, 0] = "O"
+    | secondColumn == [0, 0, 0] = "O"
+    | thirdColumn == [0, 0, 0] = "O"
+    | firstColumn == [1, 1, 1] = "X"
+    | secondColumn == [1, 1, 1] = "X"
+    | thirdColumn == [1, 1, 1] = "X"
+    | otherwise = ""
+    where 
+        firstColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
+        secondColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
+        thirdColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
+
+checkRows :: [[Cell]] -> [Char]
+checkRows table 
+    | null table = ""
+    | winner == "O" || winner == "X" = winner
+    | otherwise = checkRows $ tail table
+    where
+        winner = checkRow $ head table 
+
+checkRow :: [Cell] -> [Char]
+checkRow line 
+    | val == [0, 0, 0] = "O" 
+    | val == [1, 1, 1] = "X"
+    | otherwise = ""
+    where
+        val = [ value cell | cell <- line ]
+
+-- The functions below are printing the state of the table
+printCurrentStateOfGame :: Game -> IO ()
+printCurrentStateOfGame game = do
+    let header = makeHeaderStr 0
+    let str = makeTableStr (table game) 0
+    putStrLn $ "\t" ++ header ++ "\n" ++ str
+
+makeHeaderStr :: (Show a, Num a, Eq a) => a -> [Char]
+makeHeaderStr x
+    | x == 3 = ""
+    | otherwise = show(x) ++ "\t" ++  makeHeaderStr (x+1) 
+
+makeTableStr :: (Show a, Num a, Eq a) => [[Cell]] -> a -> [Char]
+makeTableStr table i
+    | null table = ""
+    | otherwise = makeRowStr (head table) i ++ "\n" ++ makeTableStr (tail table) (i+1) 
+
+makeRowStr :: (Show a, Num a, Eq a) => [Cell] -> a -> [Char]
+makeRowStr row i
+    | i /= -1 = show(i) ++ " |\t"  ++ makeRowStr row (-1)
+    | null row = ""
+    | otherwise = show(value (head row))  ++ "\t" ++ makeRowStr (tail row) i

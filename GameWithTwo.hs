@@ -28,7 +28,7 @@ startGame game = do
     
     let winner = returnWinner markedGame
 
-    if winner == "" then startGame markedGame else putStrLn ( "winner: " ++ winner)
+    if winner == "" then startGame markedGame else if winner == "T" then putStrLn "Tie" else putStrLn ( "winner: " ++ winner )
 
 printSelection :: Game -> IO ()
 printSelection game = do

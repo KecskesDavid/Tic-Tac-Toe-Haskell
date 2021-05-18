@@ -97,12 +97,23 @@ returnWinner :: Game -> [Char]
 returnWinner markedGame 
     | winnerDiagonals == "O" || winnerDiagonals == "X" = winnerDiagonals
     | winnerColumns == "O" || winnerColumns == "X" = winnerColumns
-    | winnerLines == "O" || winnerLines == "X" = winnerLines
+    | winnerLines == "O" || winnerLines == "X" = winnerLines 
+    | checkTie (table markedGame) = "T"
     | otherwise = ""
     where 
         winnerDiagonals = checkDiagonals $ table markedGame
         winnerColumns = checkColumns $ table markedGame
         winnerLines = checkRows $ table markedGame
+
+checkTie :: [[Cell]] -> Bool
+checkTie table
+    | unTakenCells == 0 = True
+    | otherwise = False
+    where 
+        unTakenCells = addUpUnTakens (table !! 0) + addUpUnTakens (table !! 1) + addUpUnTakens (table !! 2)
+
+addUpUnTakens :: [Cell] -> Int
+addUpUnTakens row = length [ cell | cell <- row, value cell == -1 ]
 
 -- The functions below checks whether there is a winner or not
 checkDiagonals :: [[Cell]] -> [Char]
@@ -127,8 +138,8 @@ checkColumns table
     | otherwise = ""
     where 
         firstColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
-        secondColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
-        thirdColumn = [value (table !! 0 !! 0), value (table !! 1 !! 0), value (table !! 2 !! 0)]
+        secondColumn = [value (table !! 0 !! 1), value (table !! 1 !! 1), value (table !! 2 !! 1)]
+        thirdColumn = [value (table !! 0 !! 2), value (table !! 1 !! 2), value (table !! 2 !! 2)]
 
 checkRows :: [[Cell]] -> [Char]
 checkRows table 

@@ -135,7 +135,7 @@ checkDiagonals table
     | otherwise = ""
     where
         firstDiagonal = [value (table !! 0 !! 0), value (table !! 1 !! 1), value  (table !! 2 !! 2)]
-        secondDiagonal = [value (table !! 0 !! 0), value (table !! 1 !! 1), value (table !! 2 !! 2)]
+        secondDiagonal = [value (table !! 0 !! 2), value (table !! 1 !! 1), value (table !! 0 !! 2)]
 
 -- Checks for a winner on every column --
 checkColumns :: [[Cell]] -> [Char]

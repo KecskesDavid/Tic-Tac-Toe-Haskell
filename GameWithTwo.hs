@@ -20,6 +20,7 @@ startGame game = do
     printCurrentStateOfGame game  -- The current state of the game is printed --
 
     printSelection game -- Printing player turn --
+    -- User input should be between [0, 1, 2] --
     -- Gets the input from user --
     putStr "i: "
     tempi <- getLine
@@ -36,7 +37,7 @@ startGame game = do
     let winner = returnWinner markedGame
 
     -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
-    if winner == "" then startGame markedGame else if winner == "T" then putStrLn "Tie" else putStrLn ( "winner: " ++ winner )
+    if winner == "" then startGame markedGame else if winner == "T" then putStrLn "Tie" else putStrLn ( "Winner: " ++ winner )
 
 -- Printing which players turn comes --
 printSelection :: Game -> IO ()

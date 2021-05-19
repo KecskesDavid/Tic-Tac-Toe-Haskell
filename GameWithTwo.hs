@@ -37,7 +37,12 @@ startGame game = do
     let winner = returnWinner markedGame
 
     -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
-    if winner == "" then startGame markedGame else if winner == "T" then putStrLn "Tie" else putStrLn ( "Winner: " ++ winner )
+    if winner == "" then startGame markedGame else if winner == "T" then do
+        printEndGame markedGame
+        putStrLn "Tie"
+        else do
+        printEndGame markedGame
+        putStrLn ( "Winner: " ++ winner )
 
 -- Printing which players turn comes --
 printSelection :: Game -> IO ()

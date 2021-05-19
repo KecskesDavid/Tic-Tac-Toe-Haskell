@@ -37,7 +37,12 @@ startGame game = do
     let winner = returnWinner markedGame
 
     -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
-    if winner == "" then markAIMove markedGame else (if winner == "T" then putStrLn "Tie" else putStrLn $ "Winner: " ++ winner )
+    if winner == "" then markAIMove markedGame else (if winner == "T" then do
+        printEndGame markedGame
+        putStrLn "Tie" 
+        else do
+        printEndGame markedGame
+        putStrLn $ "Winner: " ++ winner )
 
 -- Input only comes from one player, the X player --
 printSelection :: IO ()
@@ -56,7 +61,12 @@ markAIMove game = do
     let winner = returnWinner markedGame
 
     -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
-    if winner == "" then startGame markedGame else (if winner == "T" then putStrLn "Tie" else putStrLn $ "Winner: , AI " ++ winner)
+    if winner == "" then startGame markedGame else (if winner == "T" then do
+        printEndGame markedGame -- Before the end of the game the current game is printed, to see AIs last mark  --
+        putStrLn "Tie" 
+        else do
+        printEndGame markedGame -- Before the end of the game the current game is printed, to see AIs last mark  --
+        putStrLn $ "Winner: AI, " ++ winner)
 
 -- This function contains the logic behind the minimax algorithm --
 -- The inputs are: current table, an aux cell, and a flag which tells if a max or min should be calculated --
@@ -69,7 +79,7 @@ minimax table cell isMaximizing
     | otherwise = (filter ((==) (minimum $ map getFirst minList) . getFirst ) minList) !! 0
     where
         winner = returnWinner (rewriteGame table 0) -- Calculates winner if there is one --
-        -- Below there is built a tree with every possible outcome (the first step of the AI is slove) -- 
+        -- Below, every tree is built with every possible outcome of the game (the first step of the AI is slove, because every tree should be built) -- 
         maxList = [ minimax (markO table 0 (fst cell) (snd cell)) cell False | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCellT table (fst cell) (snd cell) ]
         minList = [ minimax (markX table 0 (fst cell) (snd cell)) cell True | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCellT table (fst cell) (snd cell) ]
 

@@ -19,6 +19,7 @@ module Game (
     checkRows,
     checkRow,
     printCurrentStateOfGame,
+    printEndGame,
     makeHeaderStr,
     makeTableStr,
     makeRowStr
@@ -114,6 +115,7 @@ returnWinner markedGame
         winnerRows = checkRows $ table markedGame
 
 -- Checks for a tie --
+-- Gets a table and returns a boolean in case of a tie --
 checkTie :: [[Cell]] -> Bool
 checkTie table
     | unTakenCells == 0 = True
@@ -130,12 +132,12 @@ checkDiagonals :: [[Cell]] -> [Char]
 checkDiagonals table
     | firstDiagonal == [0, 0, 0] = "O" -- Every possible cases --
     | secondDiagonal == [1, 1, 1] = "X"
-    | firstDiagonal == [0, 0, 0] = "O"
-    | secondDiagonal == [1, 1, 1] = "X"
+    | firstDiagonal == [1, 1, 1] = "X"
+    | secondDiagonal == [0, 0, 0] = "O"
     | otherwise = ""
     where
         firstDiagonal = [value (table !! 0 !! 0), value (table !! 1 !! 1), value  (table !! 2 !! 2)]
-        secondDiagonal = [value (table !! 0 !! 2), value (table !! 1 !! 1), value (table !! 0 !! 2)]
+        secondDiagonal = [value (table !! 0 !! 2), value (table !! 1 !! 1), value (table !! 2 !! 0)]
 
 -- Checks for a winner on every column --
 checkColumns :: [[Cell]] -> [Char]
@@ -178,6 +180,11 @@ printCurrentStateOfGame game = do
     let str = makeTableStr (table game) 0
     putStrLn $ "\t" ++ header ++ "\n" ++ str
 
+printEndGame :: Game -> IO ()
+printEndGame game = do
+    putStrLn "\n--- End of the game ---"
+    printCurrentStateOfGame game
+
 --- The functions named with 'make...Str' are for making custom string then returning them ---
 
 -- Makes a header with the coordinates from 0 to 2 (these are the coordinates that the user should write as input) --
@@ -195,6 +202,7 @@ makeTableStr table i
 -- Makes a row from a single [Cell] structure --
 makeRowStr :: (Show a, Num a, Eq a) => [Cell] -> a -> [Char]
 makeRowStr row i
-    | i /= -1 = show(i) ++ " |\t"  ++ makeRowStr row (-1)
+    | i /= -1 = show(i) ++ " |\t"  ++ makeRowStr row (-1) -- firstly a coordinate is appended to the string --
     | null row = ""
-    | otherwise = show(value (head row))  ++ "\t" ++ makeRowStr (tail row) i
+    | value (head row) == (-1) = "_\t" ++ makeRowStr (tail row) i 
+    | otherwise = (if(value (head row) == 1) then "X" else "O")  ++ "\t" ++ makeRowStr (tail row) i -- then only the value of every cell is appended --

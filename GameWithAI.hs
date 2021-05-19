@@ -1,42 +1,42 @@
---- This module contains the logic for the game against the AI ---
+--- Ez a modul tartalmazza az AI illetve az AI elleni játék logikáját ---
+--- Az AI gondolkodásához a MINIMAX algoritmust használtam ---
 module GameWithAI (
     gameWithAI,
     startGame,
     printSelection
 )where
 
-import Game -- Importing the game logic --
+import Game -- Importolom a játék logikáját illetve a külöböző adatstrukturákat --
 
--- Entry point for the game against the AI --
+-- Az alábbi függvény a modul 'main'-je --
 gameWithAI :: IO ()
 gameWithAI = do
-    let game = makeGame
+    let game = makeGame -- Itt történik egy új játék, tábla inicializálása majd meghívódik maga a játék logikája --
     startGame game
 
--- Game logic --
--- Recursive function, prints out current state, gets input, checks for winner then repeat --
+-- Az alábbi függvény kezeli a játékot, illetve annak menetét --
 startGame :: Game -> IO ()
 startGame game = do
-    printCurrentStateOfGame game -- The current state of the game is printed --
+    printCurrentStateOfGame game -- Előszőr kiíratom a kurens játékot --
 
-    printSelection -- Printing player turn --
-    -- User input should be between [0, 1, 2] --
-    -- Gets the input from user --
+    printSelection -- Majd kiírom melyik játékos következik --
+    -- A user a következő opciókból választhat [0, 1, 2] --
+    -- Első koordináta bekérése --
     putStr "i: "
     tempi <- getLine
     let i = read tempi::Int
-    -- Gets the input from user --
+    -- Második koordináta bekérése --
     putStr "j: "
     tempj <- getLine
     let j = read tempj::Int
 
-    -- Making a new game with the marked cell if it the cell is valid and free --
-    let markedGame = if isFreeCell game i j then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
+    -- Ha a beadott koordináták helyesek illetve szabad a cella, újra megépítem a táblát és megjelölöm az illető cellát --
+    let markedGame = if isFreeCell (table game) i j then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
     
-    -- Checking for winner --
+    -- Ellenőrzőm, ha van egy nyertes --
     let winner = returnWinner markedGame
 
-    -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
+    -- Ha van nyertes vagy döntetlen a megfelelő kimenetel kiíródik, ha nem akkor az AI megjelöli a megfelelő cellat majd újra meghívódik --
     if winner == "" then markAIMove markedGame else (if winner == "T" then do
         printEndGame markedGame
         putStrLn "Tie" 
@@ -44,46 +44,49 @@ startGame game = do
         printEndGame markedGame
         putStrLn $ "Winner: " ++ winner )
 
--- Input only comes from one player, the X player --
+-- Itt csak az X játékostól kell adatot bekérni mivel az O játkos az az AI --
 printSelection :: IO ()
 printSelection = putStrLn "Player X turn:"
 
--- This function is called when tha AI should mark a cell --
+-- Az alábbi függvény hívódik meg, hogy az AI jelöljön meg egy cellát --
 markAIMove :: Game -> IO ()
 markAIMove game = do
-    let bestMove = minimax (table game) (0, 0) True -- 'bestMove' is a (Ord b, Num b) => (b, Int, Int) tuple --
+    let bestMove = minimax (table game) (0, 0) True -- 'bestMove' egy tuple: az első eleme a maximum/minimum érték, a második illetve harmadik elem a koordinátákat adja vissza amit az AI akar megjelölni --
 
-    -- The second and third elements of the tuple are the coordinates that the AI wants to mark --
-    -- Marking the game for the AI --
+    -- Itt jelöli meg az AI a celláját --
     let markedGame = rewriteGame (markO (table game) 0 (getSecond bestMove) (getThird bestMove)) 0
 
-    -- Checking for winner after AI move--
+    -- Majd megint le kell ellenőrizni, ha van-e nyertes --
     let winner = returnWinner markedGame
 
-    -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
+    -- Ha van nyertes vagy döntetlen a megfelelő kimenetel kiíródik, ha nem akkor újra meghívódik startGame függvény --
     if winner == "" then startGame markedGame else (if winner == "T" then do
-        printEndGame markedGame -- Before the end of the game the current game is printed, to see AIs last mark  --
+        printEndGame markedGame -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
         putStrLn "Tie" 
         else do
-        printEndGame markedGame -- Before the end of the game the current game is printed, to see AIs last mark  --
+        printEndGame markedGame -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
         putStrLn $ "Winner: AI, " ++ winner)
 
--- This function contains the logic behind the minimax algorithm --
--- The inputs are: current table, an aux cell, and a flag which tells if a max or min should be calculated --
-minimax :: (Ord b, Num b) => [[Cell]] -> (Int, Int) -> Bool -> (b, Int, Int) -- The return of the function is a tuple: max value, coordinate i, coordinate j --
+-- Ez a függvény tartalmazza a minimax algoritmus logikáját --
+-- Paraméterek: currens tábla, egy segéd változó, illetve egy flag ami megmondja, hogy a jelenlegi meghívásnál melyik játékos választ --
+minimax :: (Ord b, Num b) => [[Cell]] -> (Int, Int) -> Bool -> (b, Int, Int) -- A visszatérített érték egy tuple, első eleme: max/min érték, második illetve harmadik elem: a kiválasztott cella koordinátái --
 minimax table cell isMaximizing
-    | winner == "X" = (10, fst cell, snd cell) -- The function has basically 3 outcomes: player won (-10), ai won (10), tie (0) --
+    | winner == "X" = (10, fst cell, snd cell) -- 3 lehetséges kimenet van: O nyer -> -10 pont, X nyer -> 10 pont, Döntetlen -> 0 pont  --
     | winner == "O" = (-10, fst cell, snd cell)
     | winner == "T" = (0, fst cell, snd cell)
-    | isMaximizing == True = (filter ((==) (maximum $ map getFirst maxList) . getFirst) maxList) !! 0 -- After creating every possible outcome there is applied a filter then the max is returned --
+    -- Az alábbi két sor választa ki a megfelő kimenetelt, ha AI kell válasszon akkor ő maximumot választ, ha nem akkor feltételezzük, hogy a játékos az AI számára a legrosszabb kimenetelt fogja választani --
+    -- Tehát megkeresem a maximum értéket a listából, majd filterelem a listát illetve kiválasztom az első elemet a filterelés után --
+    | isMaximizing == True = (filter ((==) (maximum $ map getFirst maxList) . getFirst) maxList) !! 0 
     | otherwise = (filter ((==) (minimum $ map getFirst minList) . getFirst ) minList) !! 0
     where
-        winner = returnWinner (rewriteGame table 0) -- Calculates winner if there is one --
-        -- Below, every tree is built with every possible outcome of the game (the first step of the AI is slove, because every tree should be built) -- 
-        maxList = [ minimax (markO table 0 (fst cell) (snd cell)) cell False | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCellT table (fst cell) (snd cell) ]
-        minList = [ minimax (markX table 0 (fst cell) (snd cell)) cell True | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCellT table (fst cell) (snd cell) ]
+        winner = returnWinner (rewriteGame table 0) -- Ebbe a váltzóba mentem el a nyertest, ha van. Ha nincs akkor üres sztring tér vissza --
+        -- Alább felépítek egy kereső fát az összes lehetséges kimenetellelt. A fa alján a levelek értéket kapnak majd azok lesznek összehasonlítva --
+        -- Mivel minden kimenet felépül az AI első lépése lassabban jön meg -- 
+        maxList = [ minimax (markO table 0 (fst cell) (snd cell)) cell False | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCell table (fst cell) (snd cell) ]
+        minList = [ minimax (markX table 0 (fst cell) (snd cell)) cell True | cell <- [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)], isFreeCell table (fst cell) (snd cell) ]
 
--- The next funtctions returnes the first, third or second element of a tuple --
+-- Az alábbi függvények egy 3 elemü tuplet kapnak paraméterül majd a nevüknek megfelelő értéket térítik vissza --
+-- Segéd függvények --
 getFirst :: (t, t1, t2) -> t
 getFirst (first,_,_) = first
 

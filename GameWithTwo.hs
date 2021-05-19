@@ -1,53 +1,51 @@
---- This module contains the logic for the multiplayer game ---
+--- Ez a modul tartalmazza a multiplazer logikáját ---
 module GameWithTwo (
     gameWithTwoPlayers,
     startGame,
     printSelection
 )where
 
-import Game -- Importing the game logic --
+import Game -- Importolom a játék logikáját illetve a külöböző adatstrukturákat --
 
--- Entry point for the multiplayer game --
+-- Az alábbi függvény a modul 'main'-je --
 gameWithTwoPlayers :: IO ()
 gameWithTwoPlayers = do
-    let game = makeGame -- Making a game entity --
+    let game = makeGame -- Itt történik egy új játék, tábla inicializálása majd meghívódik maga a játék logikája --
     startGame game
 
--- Game logic for multiplayer --
--- Recursive function, prints out current state, gets input, checks for winner then repeat --
+-- Az alábbi függvény kezeli a játékot, illetve annak menetét --
 startGame :: Game -> IO ()
 startGame game = do
-    printCurrentStateOfGame game  -- The current state of the game is printed --
+    printCurrentStateOfGame game  -- Előszőr kiíratom a kurens játékot --
 
-    printSelection game -- Printing player turn --
-    -- User input should be between [0, 1, 2] --
-    -- Gets the input from user --
+    printSelection game -- Majd kiírom melyik játékos következik --
+    -- A user a következő opciókból választhat [0, 1, 2] --
+    -- Első koordináta bekérése --
     putStr "i: "
     tempi <- getLine
     let i = read tempi::Int
-    -- Gets the input from user --
+    -- Második koordináta bekérése --
     putStr "j: "
     tempj <- getLine
     let j = read tempj::Int
 
-    -- Making a new game with the marked cell if it the cell is valid and free --
-    let markedGame = if isFreeCell game i j then (if playerMove game == 1 then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 i j) 1) else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
+    -- Ha a beadott koordináták helyesek illetve szabad a cella, újra megépítem a táblát és megjelölöm az illető cellát --
+    let markedGame = if isFreeCell (table game) i j then (if playerMove game == 1 then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 i j) 1) else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
     
-    -- Checking for winner --
+    -- Ellenőrzőm, ha van egy nyertes --
     let winner = returnWinner markedGame
 
-    -- In case if the game ended then the appropiate end is printed, otherwise the 'startGame' is called with the new marked game --
+    -- Ha van nyertes vagy döntetlen a megfelelő kimenetel kiíródik, ha nem akkor az AI megjelöli a megfelelő cellat majd újra meghívódik --
     if winner == "" then startGame markedGame else if winner == "T" then do
         printEndGame markedGame
         putStrLn "Tie"
         else do
-        printEndGame markedGame
+        printEndGame markedGame 
         putStrLn ( "Winner: " ++ winner )
 
--- Printing which players turn comes --
+-- Kiírom, hogy melyik játékos következik --
 printSelection :: Game -> IO ()
 printSelection game = do
     let player = playerMove game
-    putStr "Player "
-    if player == 0 then putStr "O" else putStr "X"
+    putStr $ "Player " ++ (if player == 0 then "O" else "X")
     putStrLn " turn:"

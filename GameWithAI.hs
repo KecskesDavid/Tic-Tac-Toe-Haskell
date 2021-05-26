@@ -30,8 +30,17 @@ startGame game = do
     tempj <- getLine
     let j = read tempj::Int
 
-    -- Ha a beadott koordináták helyesek illetve szabad a cella, újra megépítem a táblát és megjelölöm az illető cellát --
-    let markedGame = if isFreeCell (table game) i j then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
+    -- Leellenőrzőm, hogy a megadott koordináták helyesek, illetve szabad-e az illető cella -- 
+    let inputCheck = isFreeCell (table game) i j
+
+    -- Ha nem, egy üzenet fog kiírodni, illetve a játék a jelenlegi eredménnyel újra fog indulni --
+    if inputCheck == False then do
+        putStrLn "\nWrong input, try again: "
+        startGame game
+        else pure ()
+
+    -- Csak akkor ér ide a függvény, ha a koordináták helyesek illetve szabad a cella. Ekkor újra megépítem a táblát és megjelölöm az illető cellát --
+    let markedGame = if inputCheck then rewriteGame (markX (table game) 0 i j) 0 else rewriteGame (markO (table game) 0 (-1) (-1)) (playerMove game)
     
     -- Ellenőrzőm, ha van egy nyertes --
     let winner = returnWinner markedGame
@@ -60,13 +69,8 @@ markAIMove game = do
     let winner = returnWinner markedGame
 
     -- Ha van nyertes vagy döntetlen a megfelelő kimenetel kiíródik, ha nem akkor újra meghívódik startGame függvény --
-    if winner == "" then startGame markedGame else (if winner == "T" then do
-        printEndGame markedGame -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
-        putStrLn "Tie" 
-        else do
-        printEndGame markedGame -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
-        putStrLn $ "Winner: AI, " ++ winner)
-
+    if winner == "" then startGame markedGame else printWinner markedGame winner
+    
 -- Ez a függvény tartalmazza a minimax algoritmus logikáját --
 -- Paraméterek: currens tábla, egy segéd változó, illetve egy flag ami megmondja, hogy a jelenlegi meghívásnál melyik játékos választ --
 minimax :: (Ord b, Num b) => [[Cell]] -> (Int, Int) -> Bool -> (b, Int, Int) -- A visszatérített érték egy tuple, első eleme: max/min érték, második illetve harmadik elem: a kiválasztott cella koordinátái --
@@ -95,3 +99,13 @@ getSecond (_,second,_) = second
 
 getThird :: (t, t1, t2) -> t2
 getThird (_,_,third) = third
+
+-- Ez a függvény kezeli le a nyertest, illetve írja ki a végső táblát
+printWinner :: Game -> [Char] -> IO ()
+printWinner game winner  = do
+    if winner == "T" then do
+        printEndGame game -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
+        putStrLn "It is a: Tie\n"
+        else do
+        printEndGame game -- Ha lejárt a játék újra kiírom a táblát majd a nyertest  --
+        putStrLn ( "Winner: " ++ winner ++ "\n")

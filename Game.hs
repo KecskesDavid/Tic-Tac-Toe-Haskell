@@ -179,7 +179,7 @@ printCurrentStateOfGame game = do
 -- Kiírja mégegszer a játékotmjad kilép
 printEndGame :: Game -> IO ()
 printEndGame game = do
-    putStrLn "\n--- End of the game ---"
+    putStrLn "\n--- End of the game ---\n"
     printCurrentStateOfGame game
 
 --- Az alábbi 'make...Str' minta alapján elnevezett függvények egy karakterláncot állítanak elő majd visszatérítik azt ---

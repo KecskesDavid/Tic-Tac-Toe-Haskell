@@ -1,6 +1,9 @@
 --- A projekt 4 moduleból épül fel ---
 --- TicTacToe (ez a main module), Game, GameWithAi, GameWithTwo ---
 --- Ez a modul tartalmazza a maint illetve az IO müveletek, mint pl. : menü, szelekció, kilépés stb. ---
+module TicTacToe (
+    printOptions
+)where
 
 import GameWithAI
 import GameWithTwo
